@@ -22,7 +22,7 @@ load_dotenv()
 # Create Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///ecommerce.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:////tmp/ecommerce.db')  # Changed path
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
@@ -398,30 +398,42 @@ def reset_password(token):
             flash('Error occurred', 'danger')
     return render_template('reset_password.html')
 
-def create_admin_user():
+# Initialize database
+def initialize_db():
+    db.create_all()
+    # Create admin user if it doesn't exist
     admin_email = os.getenv('ADMIN_EMAIL')
     admin_password = os.getenv('ADMIN_PASSWORD')
-    if not admin_email or not admin_password:
-        return
-    admin = User.query.filter_by(email=admin_email).first()
-    if not admin:
-        admin = User(username='admin', email=admin_email, is_admin=True)
-        admin.set_password(admin_password)
-        db.session.add(admin)
-        db.session.commit()
-
-def create_sample_products():
+    if admin_email and admin_password:
+        admin = User.query.filter_by(email=admin_email).first()
+        if not admin:
+            admin = User(username='admin', email=admin_email, is_admin=True)
+            try:
+                admin.set_password(admin_password)
+                db.session.add(admin)
+                db.session.commit()
+                print("Admin user created")
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error creating admin user: {str(e)}")
+    
+    # Create sample products if none exist
     if Product.query.count() == 0:
-        products = [
-            Product(name="Sylvia's Homemade Atchar", price=55.00, description="Delicious homemade Atchar mix with a perfect blend of spices and fresh Atchar, made by Sylvia", image_url="uploads/Atchar.jpg", stock=50, category="Food"),
-            Product(name="Sylvia's Homemade Chillies", price=50.00, description="Delicious homemade chilli mix with a perfect blend of spices and fresh chillies, made by Sylvia.", image_url="uploads/chillies.jpg", stock=20, category="Food")
-        ]
-        db.session.bulk_save_objects(products)
-        db.session.commit()
+        try:
+            products = [
+                Product(name="Sylvia's Homemade Atchar", price=55.00, description="Delicious homemade Atchar mix with a perfect blend of spices and fresh Atchar, made by Sylvia", image_url="uploads/Atchar.jpg", stock=50, category="Food"),
+                Product(name="Sylvia's Homemade Chillies", price=50.00, description="Delicious homemade chilli mix with a perfect blend of spices and fresh chillies, made by Sylvia.", image_url="uploads/chillies.jpg", stock=20, category="Food")
+            ]
+            db.session.bulk_save_objects(products)
+            db.session.commit()
+            print("Sample products created")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error creating sample products: {str(e)}")
+
+# Create database tables and initial data
+with app.app_context():
+    initialize_db()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        create_admin_user()
-        create_sample_products()
     app.run(debug=True)
