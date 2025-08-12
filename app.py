@@ -16,6 +16,25 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, Regexp
 
+# Initialize extensions
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+csrf = CSRFProtect(app)
+mail = Mail(app)
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+# Database initialization function
+def initialize_database():
+    with app.app_context():
+        db.create_all()
+        create_admin_user()
+        create_sample_products()
+        print("Database tables created and sample data initialized")
+
+# Run initialization immediately
+initialize_database()
+
 # Load environment variables
 load_dotenv()
 
