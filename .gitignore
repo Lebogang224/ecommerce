@@ -1,0 +1,25 @@
+# Byte-compiled files
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+.venv/
+venv/
+
+# Database files
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# IDE files
+.idea/
+.vscode/
+
+# Uploads
+static/uploads/*

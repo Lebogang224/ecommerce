@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{% if product %}Edit{% else %}Add{% endif %} Product{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">{% if product %}Edit{% else %}Add New{% endif %} Product</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                {% if product and product.image_url %}
+                <div class="mb-3">
+                    <label class="form-label">Current Image</label><br>
+                    <img src="{{ url_for('static', filename=product.image_url) }}" 
+                         class="img-thumbnail" 
+                         style="max-height: 200px;">
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label for="name" class="form-label">Product Name</label>
+                    <input type="text" class="form-control" id="name" name="name" 
+                           value="{{ product.name if product else '' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="price" class="form-label">Price (R)</label>
+                    <input type="number" class="form-control" id="price" name="price" 
+                           value="{{ product.price if product else '' }}" 
+                           step="0.01" min="0" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" 
+                              rows="3" required>{{ product.description if product else '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label">Upload New Image</label>
+                    <input type="file" class="form-control" id="image" name="image">
+                    <small class="form-text text-muted">Leave blank to keep current image</small>
+                </div>
+                <div class="mb-3">
+                    <label for="image_url" class="form-label">Image URL (alternative)</label>
+                    <input type="url" class="form-control" id="image_url" name="image_url"
+                           value="{{ product.image_url if product else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label for="stock" class="form-label">Stock Quantity</label>
+                    <input type="number" class="form-control" id="stock" name="stock" 
+                           value="{{ product.stock if product else '' }}" 
+                           min="0" required>
+                </div>
+                <div class="mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category" required>
+                        <option value="">Select a category</option>
+                        {% for cat in ['Food', 'Electronics', 'Clothing', 'Home', 'Sports', 'Books'] %}
+                        <option value="{{ cat }}" 
+                            {% if product and product.category == cat %}selected{% endif %}>
+                            {{ cat }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    {% if product %}Update{% else %}Add{% endif %} Product
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

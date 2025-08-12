@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmation{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h2 class="mb-0">Order Confirmed!</h2>
+        </div>
+        <div class="card-body">
+            <h4 class="card-title">Thank you for your order, {{ current_user.username }}!</h4>
+            <p>Your order #{{ order.id }} has been placed successfully.</p>
+            
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>Order ID:</strong> {{ order.id }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Total Amount:</strong> R{{ "%.2f"|format(order.total) }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Payment Method:</strong> {{ order.payment_method.replace('_', ' ')|title }}
+                </li>
+                {% if order.payment_method == 'cash_send' and order.phone %}
+                <li class="list-group-item">
+                    <strong>Phone Number:</strong> {{ order.phone }}
+                </li>
+                {% endif %}
+                <li class="list-group-item">
+                    <strong>Status:</strong> {{ order.status }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Date:</strong> {{ order.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                </li>
+            </ul>
+
+            <div class="mt-4">
+                <a href="{{ url_for('home') }}" class="btn btn-primary">Continue Shopping</a>
+                <a href="#" class="btn btn-secondary" onclick="window.print()">Print Receipt</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

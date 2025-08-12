@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Product Detail - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Product Image Column -->
+        <div class="col-md-6">
+            <div class="product-image-container text-center p-3 bg-light rounded">
+                {% if product.id == 2 %}
+                    <!-- Special image for product ID 2 (Chillies) -->
+                    <img src="{{ url_for('static', filename='uploads/chillies2.jpeg') }}"
+                {% else %}
+                    <!-- Normal image for all other products -->
+                    <img src="{{ url_for('static', filename=product.image_url) }}"
+                {% endif %}
+                         class="img-fluid rounded shadow"
+                         style="max-height: 500px; width: auto; object-fit: contain;"
+                         alt="{{ product.name }}"
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/500?text=Image+Not+Available'">
+            </div>
+        </div>
+        
+        <!-- Product Info Column -->
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            
+            <div class="price-container mb-4">
+                <span class="display-4 text-primary">R{{ "%.2f"|format(product.price) }}</span>
+                <span class="badge bg-success ms-2">VAT Inclusive</span>
+            </div>
+            
+            <div class="product-description mb-4">
+                <h4>Product Details</h4>
+                <p class="lead">{{ product.description }}</p>
+            </div>
+            
+            <div class="product-meta mb-4">
+                <p><strong>Category:</strong> {{ product.category }}</p>
+                <p><strong>Availability:</strong> 
+                    {% if product.stock > 5 %}
+                        <span class="text-success">In Stock ({{ product.stock }} available)</span>
+                    {% elif product.stock > 0 %}
+                        <span class="text-warning">Low Stock (Only {{ product.stock }} left)</span>
+                    {% else %}
+                        <span class="text-danger">Out of Stock</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="action-buttons mt-5">
+                {% if current_user.is_authenticated %}
+                <form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" class="d-inline-block me-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary btn-lg" {% if product.stock <= 0 %}disabled{% endif %}>
+                        Add to Cart
+                    </button>
+                </form>
+                <a href="{{ url_for('cart') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-shopping-cart"></i> View Cart
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login to Purchase</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-image-container {
+        border: 1px solid #dee2e6;
+    }
+    .price-container {
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        display: inline-block;
+    }
+    .product-description {
+        white-space: pre-line;
+    }
+</style>
+{% endblock %}
