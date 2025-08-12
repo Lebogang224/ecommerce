@@ -16,28 +16,10 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, Regexp
 
-# Initialize extensions
-db = SQLAlchemy(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-csrf = CSRFProtect(app)
-mail = Mail(app)
-serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-
-# Database initialization function
-def initialize_database():
-    with app.app_context():
-        db.create_all()
-        create_admin_user()
-        create_sample_products()
-        print("Database tables created and sample data initialized")
-
-# Run initialization immediately
-initialize_database()
-
 # Load environment variables
 load_dotenv()
 
+# Create Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///ecommerce.db')
@@ -111,7 +93,7 @@ class Order(db.Model):
     total = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default='Pending')
     payment_method = db.Column(db.String(50))
-    phone = db.Column(db.String(20), nullable=True) # Added phone number field
+    phone = db.Column(db.String(20), nullable=True)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user = db.relationship('User', backref=db.backref('orders', lazy=True))
     
@@ -149,17 +131,14 @@ def register():
     form = RegistrationForm()
     
     if form.validate_on_submit():
-        # Check for existing username
         if User.query.filter_by(username=form.username.data).first():
             flash('Username taken', 'danger')
             return render_template('register.html', form=form)
             
-        # Check for existing email
         if User.query.filter_by(email=form.email.data).first():
             flash('Email taken', 'danger')
             return render_template('register.html', form=form)
         
-        # Create new user
         user = User(username=form.username.data, 
                     email=form.email.data, 
                     is_admin=False)
@@ -264,9 +243,8 @@ def checkout():
     total = sum(item.quantity * item.product.price for item in cart_items)
     if request.method == 'POST':
         payment_method = request.form['payment_method']
-        phone = request.form.get('phone') # Get phone number
+        phone = request.form.get('phone')
         
-        # Create the order with the phone number
         order = Order(user_id=current_user.id, 
                       total=total, 
                       payment_method=payment_method, 
@@ -420,7 +398,6 @@ def reset_password(token):
             flash('Error occurred', 'danger')
     return render_template('reset_password.html')
 
-# Initialize Database
 def create_admin_user():
     admin_email = os.getenv('ADMIN_EMAIL')
     admin_password = os.getenv('ADMIN_PASSWORD')
