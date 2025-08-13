@@ -7,9 +7,6 @@ __pycache__/
 .venv/
 venv/
 
-# Database files
-*.db
-*.sqlite3
 
 # Logs
 *.log
@@ -23,3 +20,8 @@ venv/
 
 # Uploads
 static/uploads/*
+
+# Database files
+*.db
+*.sql
+instance/
