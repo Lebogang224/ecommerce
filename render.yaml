@@ -2,6 +2,7 @@ services:
   - type: web
     name: ecommerce
     runtime: python
+    pythonVersion: "3.11.7"  # Add this line
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app"
     envVars:
